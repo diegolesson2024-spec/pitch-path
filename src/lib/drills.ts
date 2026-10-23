@@ -8,7 +8,8 @@ import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import type { CurrentUser } from "./auth";
 
-export const VIDEO_DIR = path.join(process.cwd(), "uploads", "drill-videos");
+// UPLOAD_DIR points at persistent storage in production (e.g. a Render disk); defaults to ./uploads.
+export const VIDEO_DIR = path.join(process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads"), "drill-videos");
 export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 export const MAX_VIDEO_SECONDS = 120;
 export const VIDEO_TYPES: Record<string, string> = {

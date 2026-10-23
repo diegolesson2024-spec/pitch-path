@@ -1,0 +1,32 @@
+# Render Blueprint: New → Blueprint → pick this repo → fill in SITE_URL → Apply.
+# One web service with a persistent disk for the SQLite database and drill videos.
+services:
+  - type: web
+    name: pitchpath
+    runtime: node
+    plan: starter # persistent disks need a paid instance; the free plan wipes data on restart
+    region: oregon
+    buildCommand: npm ci && npx prisma generate && npm run build
+    # The disk only exists at runtime, so the schema is applied on start. db push refuses
+    # destructive changes (it would need --accept-data-loss), so a bad deploy can't wipe data.
+    startCommand: npx prisma db push --skip-generate && npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: pitchpath-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        value: file:/var/data/pitchpath.db
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: DEMO_MODE
+        value: "false"
+      # Your public address, e.g. https://pitchpathsoccer.com (or the onrender.com URL to start).
+      - key: SITE_URL
+        sync: false

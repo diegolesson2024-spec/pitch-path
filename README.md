@@ -79,23 +79,29 @@ See `.env.example`. All are read on the server only.
 | `DATABASE_URL` | Yes | SQLite file locally; PostgreSQL recommended in production. |
 | `SITE_URL` | Yes in production | Public origin, e.g. `https://app.example.com`. **Set before `npm run build`**: the sitemap, robots and canonical links are generated at build time. |
 | `DEMO_MODE` | No | `"true"` shows one-click demo logins. Must be `"false"` for real clubs. |
+| `UPLOAD_DIR` | Production | Folder for drill videos on persistent storage. Defaults to `./uploads`. |
 
 ## Deploying
 
-PitchPath is a standard Next.js server app (`npm run build` then `npm start`, which listens on port 3000 or `-p <port>`). Health check: `GET /api/health` returns 200 when the database is reachable and 503 when it isn't.
+PitchPath is a standard Next.js server app (`npm run build` then `npm start`; it listens on `PORT` or 3000). Health check: `GET /api/health` returns 200 when the database is reachable and 503 when it isn't.
 
-It writes to local disk in two places: the SQLite database (`prisma/*.db`) and drill videos (`uploads/drill-videos/`). So either:
+It writes to disk in two places, the SQLite database and drill videos, so it needs a host with a **persistent disk**. A serverless host (e.g. Vercel) would first need PostgreSQL and object storage.
 
-- **Run it on a server or container with a persistent volume** (e.g. Fly.io, Render, Railway, a VM) mounted at the project root, keeping SQLite; or
-- **Use a serverless host** (e.g. Vercel) only after switching Prisma to PostgreSQL and moving drill videos to object storage. Serverless file systems are not persistent.
+### Render (recommended; `render.yaml` included)
 
-Steps:
+1. Push this repo to GitHub.
+2. In Render: **New → Blueprint**, pick the repo. Render reads `render.yaml` and creates a Starter web service with a 1 GB disk at `/var/data`, a generated `SESSION_SECRET`, `DATABASE_URL=file:/var/data/pitchpath.db`, `UPLOAD_DIR=/var/data/uploads` and `DEMO_MODE=false`.
+3. Enter `SITE_URL` when asked (your domain, or the `https://<name>.onrender.com` address to start), then **Apply**. The first deploy takes a few minutes.
+4. Create your admin: open the service's **Shell** tab and run
+   `npm run create-admin -- --email you@example.com --name "Your Name"`.
+   It prints a temporary password once. Sign in and change it on the Account page.
+5. Add your domain under **Settings → Custom Domains** and create the DNS records Render shows at your registrar. HTTPS is automatic. If the domain changes, update `SITE_URL` and redeploy so the sitemap and links use it.
 
-1. Provision the database and set `DATABASE_URL`; run `npx prisma db push` (or adopt `prisma migrate` before your first real data).
-2. Set `SESSION_SECRET`, `SITE_URL`, `DEMO_MODE="false"`. Do **not** run `npm run db:seed` / `db:reset` against production: they wipe all data.
-3. Create the first platform admin (e.g. a one-off script or `prisma studio`), then use the People page to add clubs and staff.
-4. `npm ci && npm run build && npm start` behind HTTPS (cookies are `Secure` in production).
-5. Point uptime monitoring at `/api/health`, and set up regular database and `uploads/` backups.
+Never run `npm run db:seed` or `db:reset` in production: they wipe all data. Render takes daily disk snapshots on paid plans; still keep your own backups of `/var/data`.
+
+### Other hosts
+
+Set the same environment variables, mount persistent storage, then build with `npm ci && npx prisma generate && npm run build` and start with `npx prisma db push --skip-generate && npm start`.
 
 ## Still to do before scale
 

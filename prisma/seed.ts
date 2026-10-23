@@ -119,7 +119,7 @@ async function main() {
     prisma.user.deleteMany(),
   ]);
   // Uploaded drill videos belong to the drills just deleted.
-  fs.rmSync(path.join(process.cwd(), "uploads", "drill-videos"), { recursive: true, force: true });
+  fs.rmSync(path.join(process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads"), "drill-videos"), { recursive: true, force: true });
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
