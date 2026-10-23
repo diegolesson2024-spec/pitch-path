@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+/*
+  PitchPath color system. Every color has one job:
+  - Neutrals (night/navy/panel/line/ink/mute): surfaces and text.
+  - Orange (volt): brand and the single primary action on a page; the overall score.
+  - Royal blue: links, selection, secondary emphasis.
+  - Good / warn / alert: score and status only (strong, developing, needs work; up/down).
+  - Pillar colors (tec/tac/phy/men): the four skill pillars, the same in every chart.
+*/
+@theme {
+  --color-night: #0a0e1a;
+  --color-navy: #0e1322;
+  --color-panel: #121829;
+  --color-panel-2: #182035;
+  --color-line: rgb(255 255 255 / 0.07);
+  --color-line-strong: rgb(255 255 255 / 0.14);
+  /* #2f5bff keeps white button text above 4.5:1 (WCAG AA). */
+  --color-royal: #2f5bff;
+  --color-royal-soft: #8aa6ff;
+  --color-volt: #ff6a13;
+  --color-volt-soft: #ff9a52;
+  --color-good: #34d399;
+  /* Gold, kept well away from the brand orange so "developing" never reads as "action". */
+  --color-warn: #facc15;
+  --color-alert: #fb7185;
+  --color-tec: #6c9bff;
+  --color-tac: #b197fc;
+  --color-phy: #2dd4bf;
+  --color-men: #f9a8d4;
+  --color-ink: #eef1f8;
+  --color-mute: #a3acc2;
+  /* Lightest text colour that still meets WCAG AA (4.5:1) on panel and panel-2. */
+  --color-dim: #8b94ab;
+  --color-paper: #ffffff;
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-body), sans-serif;
+
+  --radius-card: 1rem;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--color-night);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-volt);
+    color: var(--color-night);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-volt);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .panel {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+  .panel-flat {
+    background: var(--color-panel-2);
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+  }
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-mute);
+  }
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    line-height: 0.92;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn-primary {
+    background: var(--color-volt);
+    color: #140600;
+  }
+  .btn-primary:hover {
+    background: var(--color-volt-soft);
+  }
+  .btn-royal {
+    background: var(--color-royal);
+    color: white;
+  }
+  .btn-royal:hover {
+    background: #2548e0;
+  }
+  .btn-ghost {
+    border: 1px solid var(--color-line-strong);
+    color: var(--color-ink);
+    background: rgb(255 255 255 / 0.02);
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-royal-soft);
+    background: rgb(47 91 255 / 0.12);
+  }
+  .field {
+    width: 100%;
+    background: rgb(4 9 25 / 0.6);
+    border: 1px solid var(--color-line-strong);
+    border-radius: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    color: var(--color-ink);
+    font-size: 0.95rem;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-royal-soft);
+    box-shadow: 0 0 0 3px rgb(47 91 255 / 0.25);
+  }
+  .label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-mute);
+    margin-bottom: 0.4rem;
+  }
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    display: inline-block;
+  }
+  .pitch-grid {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}
+
+input[type="range"].score {
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-royal) var(--fill, 50%), rgb(255 255 255 / 0.1) var(--fill, 50%));
+}
+input[type="range"].score::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: white;
+  border: 4px solid var(--color-volt);
+  cursor: pointer;
+}
+input[type="range"].score::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: white;
+  border: 4px solid var(--color-volt);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body {
+    background: white;
+    color: #0b1230;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

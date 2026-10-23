@@ -1,0 +1,383 @@
+// PitchPath data model.
+// SQLite has no enums, so role/status fields are strings validated in src/lib.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Club {
+  id          String   @id @default(cuid())
+  name        String
+  shortName   String
+  city        String
+  primaryHex  String   @default("#2F5BFF")
+  createdAt   DateTime @default(now())
+  users       User[]
+  teams       Team[]
+  players     Player[]
+  drills      Drill[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  // ADMIN | CLUB | COACH | PARENT | PLAYER
+  role         String
+  clubId       String?
+  club         Club?    @relation(fields: [clubId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+  // Bumped on password change / "sign out everywhere" to invalidate existing sessions.
+  sessionVersion Int    @default(0)
+
+  coachTeams   CoachTeam[]
+  access       PlayerAccess[]
+  evaluations  Evaluation[]
+  plans        DevelopmentPlan[]
+  notes        Note[]
+  checkIns     CheckIn[]
+  invites      Invite[]       @relation("InviteCreator")
+  auditLogs    AuditLog[]
+  drills       Drill[]        @relation("DrillCreator")
+  notifications Notification[]
+  drillLogs    DrillLog[]     @relation("DrillLogger")
+  uploads      StatImport[]   @relation("ImportUploader")
+  reviews      StatImport[]   @relation("ImportReviewer")
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name      String
+  ageGroup  String
+  season    String
+  createdAt DateTime @default(now())
+  coaches   CoachTeam[]
+  players   Player[]
+  sessions  Session[]
+}
+
+model CoachTeam {
+  userId String
+  teamId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+}
+
+model Player {
+  id            String   @id @default(cuid())
+  clubId        String
+  club          Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  teamId        String?
+  team          Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime
+  // GK, CB, FB, CDM, CM, CAM, W, ST
+  position      String
+  secondaryPos  String?
+  dominantFoot  String   @default("Right")
+  heightCm      Int?
+  weightKg      Int?
+  shirtNumber   Int?
+  avatarHue     Int      @default(220)
+  // Guardian consent is required before a minor's data is shared outside staff.
+  consentAt     DateTime?
+  // Set per player by a coach: lets this player's parents upload match stats for review.
+  allowParentImports Boolean @default(false)
+  createdAt     DateTime @default(now())
+
+  access        PlayerAccess[]
+  evaluations   Evaluation[]
+  matchStats    MatchStat[]
+  attendance    Attendance[]
+  plans         DevelopmentPlan[]
+  notes         Note[]
+  invites       Invite[]
+  drillLogs     DrillLog[]
+  statImports   StatImport[]
+}
+
+// A match-stats file a parent uploaded. Rows wait here until a coach approves them.
+model StatImport {
+  id           String    @id @default(cuid())
+  playerId     String
+  player       Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User      @relation("ImportUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+  fileName     String
+  // Veo | Hudl | Spreadsheet | Other
+  source       String
+  // JSON array of parsed match rows (see src/lib/stat-import.ts)
+  rows         String
+  // JSON array of rows that couldn't be read, with reasons
+  skipped      String    @default("[]")
+  // PENDING | APPROVED | REJECTED
+  status       String    @default("PENDING")
+  reviewedById String?
+  reviewedBy   User?     @relation("ImportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+  reviewNote   String    @default("")
+  createdAt    DateTime  @default(now())
+  matches      MatchStat[]
+
+  @@index([playerId, status])
+}
+
+// Grants a PARENT or PLAYER account read access to one player profile.
+model PlayerAccess {
+  userId    String
+  playerId  String
+  // PARENT | SELF
+  relation  String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, playerId])
+}
+
+model Evaluation {
+  id            String   @id @default(cuid())
+  playerId      String
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  coachId       String
+  coach         User     @relation(fields: [coachId], references: [id])
+  date          DateTime
+  label         String
+  strengths     String
+  improvements  String
+  comment       String
+  // Shared with parent/player portals only once published.
+  published     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  scores        EvaluationScore[]
+}
+
+model EvaluationScore {
+  id           String     @id @default(cuid())
+  evaluationId String
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  // TECHNICAL | TACTICAL | PHYSICAL | MENTAL
+  category     String
+  skill        String
+  score        Int
+
+  @@unique([evaluationId, skill])
+}
+
+model MatchStat {
+  id              String   @id @default(cuid())
+  playerId        String
+  player          Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  date            DateTime
+  opponent        String
+  competition     String   @default("League")
+  minutes         Int
+  goals           Int      @default(0)
+  assists         Int      @default(0)
+  shots           Int      @default(0)
+  shotsOnTarget   Int      @default(0)
+  keyPasses       Int      @default(0)
+  passesCompleted Int      @default(0)
+  passesAttempted Int      @default(0)
+  dribblesWon     Int      @default(0)
+  tackles         Int      @default(0)
+  interceptions   Int      @default(0)
+  rating          Float?
+  // Set when the row came from an approved parent import.
+  importId        String?
+  import          StatImport? @relation(fields: [importId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  date      DateTime
+  // TRAINING | MATCH
+  kind      String
+  title     String
+  attendance Attendance[]
+}
+
+model Attendance {
+  id        String  @id @default(cuid())
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  playerId  String
+  player    Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  // PRESENT | LATE | ABSENT | EXCUSED
+  status    String
+
+  @@unique([sessionId, playerId])
+}
+
+// Library drills have no creator. Coach-made drills belong to a coach and club,
+// and stay private to the coach unless shared with the club.
+model Drill {
+  id           String  @id @default(cuid())
+  name         String
+  skill        String
+  category     String
+  summary      String
+  instructions String
+  equipment    String
+  minutes      Int
+  difficulty   String
+  atHome       Boolean @default(true)
+  createdById  String?
+  createdBy    User?   @relation("DrillCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  clubId       String?
+  club         Club?   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  // PRIVATE | CLUB (ignored for library drills)
+  visibility   String  @default("PRIVATE")
+  // Stored under uploads/drill-videos and streamed only to authorised users.
+  videoFile    String?
+  videoMime    String?
+  videoSize    Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  planDrills   PlanDrill[]
+  logs         DrillLog[]
+}
+
+model DevelopmentPlan {
+  id           String   @id @default(cuid())
+  playerId     String
+  player       Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  coachId      String
+  coach        User     @relation(fields: [coachId], references: [id])
+  title        String
+  primaryFocus String
+  // ACTIVE | COMPLETED | ARCHIVED
+  status       String   @default("ACTIVE")
+  startDate    DateTime
+  endDate      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  goals        PlanGoal[]
+  drills       PlanDrill[]
+  checkIns     CheckIn[]
+}
+
+model PlanGoal {
+  id          String          @id @default(cuid())
+  planId      String
+  plan        DevelopmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  skill       String
+  description String
+  metric      String
+  baseline    Float
+  target      Float
+  current     Float
+  unit        String
+  weeklyTarget String
+  sortOrder   Int             @default(0)
+}
+
+model PlanDrill {
+  id         String          @id @default(cuid())
+  planId     String
+  plan       DevelopmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  drillId    String
+  drill      Drill           @relation(fields: [drillId], references: [id])
+  perWeek    Int             @default(3)
+  coachNote  String          @default("")
+}
+
+model CheckIn {
+  id        String          @id @default(cuid())
+  planId    String
+  plan      DevelopmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User            @relation(fields: [authorId], references: [id])
+  date      DateTime        @default(now())
+  note      String
+  // 1-5 self/coach rating of the week
+  effort    Int
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  // STAFF (coaches/club only) | FAMILY (also visible to parent/player)
+  visibility String  @default("FAMILY")
+  createdAt DateTime @default(now())
+}
+
+// One-time link a coach sends so a parent or player can create their account.
+model Invite {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  email      String
+  // PARENT | SELF
+  relation   String
+  playerId   String
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  createdById String
+  createdBy  User     @relation("InviteCreator", fields: [createdById], references: [id])
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime @default(now())
+}
+
+// In-app notifications for families (and reminders/badges for players).
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // EVALUATION | PLAN | NOTE | REMINDER | BADGE
+  kind      String
+  title     String
+  body      String    @default("")
+  href      String    @default("/dashboard")
+  // Groups one-off notifications (e.g. "reminder:2026-10-19") so they're created once.
+  dedupeKey String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt])
+}
+
+// One row per drill a player practised on a given day (local date, YYYY-MM-DD).
+model DrillLog {
+  id         String   @id @default(cuid())
+  playerId   String
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  drillId    String
+  drill      Drill    @relation(fields: [drillId], references: [id], onDelete: Cascade)
+  loggedById String?
+  loggedBy   User?    @relation("DrillLogger", fields: [loggedById], references: [id], onDelete: SetNull)
+  day        String
+  createdAt  DateTime @default(now())
+
+  @@unique([playerId, drillId, day])
+  @@index([playerId, day])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  target    String
+  detail    String   @default("")
+  createdAt DateTime @default(now())
+}
