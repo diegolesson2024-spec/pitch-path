@@ -20,9 +20,9 @@ const DEMO_ROLES = [
   { role: "ADMIN", label: "Platform admin", who: "Morgan Ellis · all clubs", icon: ShieldCheck },
 ];
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; reset?: string }> }) {
   if (await getCurrentUser()) redirect("/dashboard");
-  const { next } = await searchParams;
+  const { next, reset } = await searchParams;
   const demo = process.env.DEMO_MODE === "true";
 
   return (
@@ -47,8 +47,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <div className="panel w-full max-w-md p-6 md:p-8">
           <h2 className="display text-3xl">Sign in</h2>
           <p className="mb-6 mt-1 text-sm text-mute">Use the account your club or coach set up for you.</p>
+          {reset === "1" && (
+            <p role="status" className="mb-4 rounded-lg bg-good/10 px-3 py-2 text-sm text-good">Your password has been changed. Sign in with your new password.</p>
+          )}
           <LoginForm next={next} />
-          <p className="mt-5 text-center text-sm text-mute">
+          <p className="mt-3 text-right text-sm">
+            <Link href="/forgot-password" className="font-semibold text-royal-soft hover:underline">Forgot password?</Link>
+          </p>
+          <p className="mt-4 text-center text-sm text-mute">
             New here?{" "}
             <Link href="/signup" className="font-semibold text-royal-soft hover:underline">Create an account</Link>
           </p>

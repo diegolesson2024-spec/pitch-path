@@ -1,5 +1,6 @@
 "use client";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { useActionState } from "react";
 import { login, type LoginState } from "./actions";
 
@@ -14,7 +15,7 @@ export function LoginForm({ next }: { next?: string }) {
       </div>
       <div>
         <label className="label" htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" autoComplete="current-password" required className="field" />
+        <PasswordInput id="password" name="password" autoComplete="current-password" required className="field" />
       </div>
       {state.error && (
         <p role="alert" className="rounded-lg border border-alert/30 bg-alert/10 px-3 py-2 text-sm text-alert">

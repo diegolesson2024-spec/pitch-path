@@ -36,6 +36,28 @@ export async function createStaff(_: PeopleState, form: FormData): Promise<Peopl
   return { tempPassword, email: d.email };
 }
 
+export type ResetState = { error?: string; tempPassword?: string };
+
+// Gives someone a new temporary password (shown once) and signs them out everywhere.
+// Admins can reset anyone except themselves; club directors only people in their own club, never admins.
+export async function resetUserPassword(userId: string): Promise<ResetState> {
+  const me = await requireUser(["ADMIN", "CLUB"]);
+  if (userId === me.id) return { error: "Use the Account page to change your own password." };
+  const target = await db.user.findUnique({ where: { id: userId } });
+  if (!target) return { error: "That account no longer exists." };
+  if (me.role === "CLUB" && (target.role === "ADMIN" || !me.clubId || target.clubId !== me.clubId)) {
+    return { error: "You can only reset passwords for people in your club." };
+  }
+
+  const tempPassword = crypto.randomBytes(9).toString("base64url");
+  await db.user.update({
+    where: { id: target.id },
+    data: { passwordHash: await bcrypt.hash(tempPassword, 12), sessionVersion: { increment: 1 } },
+  });
+  await audit(me.id, "PASSWORD_RESET_BY_STAFF", `user:${target.id}`, target.email);
+  return { tempPassword };
+}
+
 export async function createClub(_: PeopleState, form: FormData): Promise<PeopleState> {
   const user = await requireUser(["ADMIN"]);
   const parsed = z

@@ -30,3 +30,8 @@ services:
       # Your public address, e.g. https://pitchpathsoccer.com (or the onrender.com URL to start).
       - key: SITE_URL
         sync: false
+      # Optional: enable "Forgot password?" emails (see README).
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false

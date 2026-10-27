@@ -1,5 +1,6 @@
 "use client";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { useActionState } from "react";
 import { signup, type SignupState } from "./actions";
 
@@ -23,11 +24,11 @@ export function SignupForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="label">Password</span>
-            <input name="password" type="password" required minLength={10} autoComplete="new-password" aria-describedby="pw-hint" aria-invalid={invalid("password")} className="field" />
+            <PasswordInput name="password" required minLength={10} autoComplete="new-password" aria-describedby="pw-hint" aria-invalid={invalid("password")} className="field" />
           </label>
           <label className="block">
             <span className="label">Confirm password</span>
-            <input name="confirm" type="password" required minLength={10} autoComplete="new-password" aria-invalid={invalid("confirm")} className="field" />
+            <PasswordInput name="confirm" required minLength={10} autoComplete="new-password" aria-invalid={invalid("confirm")} className="field" />
           </label>
         </div>
         <p id="pw-hint" className="-mt-2 text-xs text-mute">At least 10 characters. A short phrase is easiest to remember.</p>

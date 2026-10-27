@@ -80,6 +80,15 @@ See `.env.example`. All are read on the server only.
 | `SITE_URL` | Yes in production | Public origin, e.g. `https://app.example.com`. **Set before `npm run build`**: the sitemap, robots and canonical links are generated at build time. |
 | `DEMO_MODE` | No | `"true"` shows one-click demo logins. Must be `"false"` for real clubs. |
 | `UPLOAD_DIR` | Production | Folder for drill videos on persistent storage. Defaults to `./uploads`. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Optional | Turn on "Forgot password?" emails (see below). Without them, people are told to ask their club director, who can reset passwords from the People page. |
+
+### Passwords
+
+Passwords are stored only as bcrypt hashes and can never be displayed. Instead:
+
+- Every password box has a show/hide (eye) button so people can check what they typed.
+- Platform admins and club directors can **Reset password** for anyone in their club on the People page. It shows a one-time temporary password and signs that person out everywhere.
+- **Forgot password?** on the sign-in page emails a one-time link (valid 1 hour; only its SHA-256 hash is stored). To enable it: create a free account at https://resend.com, add and verify your domain there (it gives you DNS records to add in Cloudflare), create an API key, then set `RESEND_API_KEY` and `EMAIL_FROM="PitchPath <noreply@yourdomain.com>"` in Render and redeploy.
 
 ## Deploying
 

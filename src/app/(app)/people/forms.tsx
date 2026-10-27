@@ -1,7 +1,51 @@
 "use client";
 
-import { useActionState } from "react";
-import { createClub, createStaff, type PeopleState } from "./actions";
+import { useActionState, useState } from "react";
+import { createClub, createStaff, resetUserPassword, type PeopleState, type ResetState } from "./actions";
+
+export function ResetPasswordButton({ userId, name }: { userId: string; name: string }) {
+  const [state, action, pending] = useActionState<ResetState, FormData>(resetUserPassword.bind(null, userId), {});
+  const [confirming, setConfirming] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  if (state.tempPassword) {
+    return (
+      <div className="rounded-lg bg-warn/10 p-2 text-xs" role="status">
+        <p>New temporary password for {name} (shown once):</p>
+        <div className="mt-1 flex items-center gap-2">
+          <code className="rounded bg-night/60 px-1.5 py-0.5 font-bold">{state.tempPassword}</code>
+          <button
+            type="button"
+            onClick={() => navigator.clipboard.writeText(state.tempPassword!).then(() => setCopied(true))}
+            className="font-semibold text-royal-soft hover:underline"
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+        <p className="mt-1 text-mute">Share it privately. They&apos;re signed out and should change it on their Account page.</p>
+      </div>
+    );
+  }
+
+  if (!confirming) {
+    return (
+      <button type="button" onClick={() => setConfirming(true)} className="text-xs font-semibold text-royal-soft hover:underline">
+        Reset password
+      </button>
+    );
+  }
+
+  return (
+    <form action={action} className="flex flex-wrap items-center gap-2 text-xs">
+      <span>Reset {name}&apos;s password?</span>
+      <button disabled={pending} className="rounded-md bg-royal px-2 py-1 font-semibold text-white disabled:opacity-60">
+        {pending ? "Resetting…" : "Yes, reset"}
+      </button>
+      <button type="button" onClick={() => setConfirming(false)} className="font-semibold text-mute hover:text-ink">Cancel</button>
+      {state.error && <span role="alert" className="w-full text-alert">{state.error}</span>}
+    </form>
+  );
+}
 
 export function CreateUserForm({ isAdmin, clubs }: { isAdmin: boolean; clubs: { id: string; name: string }[] }) {
   const [state, action, pending] = useActionState<PeopleState, FormData>(createStaff, {});

@@ -1,5 +1,6 @@
 "use client";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { useActionState } from "react";
 import { acceptInvite, type AcceptState } from "./actions";
 
@@ -16,7 +17,7 @@ export function AcceptForm({ token, email, existing }: { token: string; email: s
       )}
       <label className="block">
         <span className="label">{existing ? "Password" : "Choose a password (10+ characters)"}</span>
-        <input name="password" type="password" required minLength={existing ? 1 : 10} autoComplete={existing ? "current-password" : "new-password"} className="field" />
+        <PasswordInput name="password" required minLength={existing ? 1 : 10} autoComplete={existing ? "current-password" : "new-password"} className="field" />
       </label>
       {state.error && <p role="alert" className="text-sm text-alert">{state.error}</p>}
       <button disabled={pending} className="btn btn-primary w-full !py-3">{pending ? "Please wait…" : existing ? "Link profile" : "Create account"}</button>
