@@ -16,6 +16,7 @@ export default async function EditDrillPage({ params }: { params: Promise<{ id: 
       <PageHeader eyebrow="Drill builder" title="Edit" accent={drill.name} />
       <DrillForm
         clubName={user.clubName ?? "your club"}
+        library={!drill.createdById && !drill.clubId}
         initial={{
           id: drill.id,
           name: drill.name,

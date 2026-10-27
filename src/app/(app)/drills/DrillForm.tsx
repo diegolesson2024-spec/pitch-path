@@ -58,7 +58,7 @@ function readDuration(file: File) {
   });
 }
 
-export function DrillForm({ initial = EMPTY, clubName }: { initial?: DrillInitial; clubName: string }) {
+export function DrillForm({ initial = EMPTY, clubName, library = false }: { initial?: DrillInitial; clubName: string; library?: boolean }) {
   const router = useRouter();
   const editing = Boolean(initial.id);
   const [file, setFile] = useState<File | null>(null);
@@ -200,6 +200,12 @@ export function DrillForm({ initial = EMPTY, clubName }: { initial?: DrillInitia
 
         <section className="panel p-5">
           <h2 className="mb-3 text-lg font-bold">Who can use it</h2>
+          {library ? (
+            <p className="flex items-start gap-3 rounded-xl border border-volt bg-volt/[0.08] p-3 text-sm">
+              <Users size={18} className="mt-0.5 shrink-0 text-volt" />
+              <span><span className="block font-bold">PitchPath library</span><span className="block text-xs text-mute">Every club, coach, parent and player can see this drill.</span></span>
+            </p>
+          ) : (<>
           <div className="grid gap-2">
             {([
               { v: "PRIVATE", icon: Lock, t: "Only me", d: "Just you. Players see it only when you add it to their plan." },
@@ -213,6 +219,7 @@ export function DrillForm({ initial = EMPTY, clubName }: { initial?: DrillInitia
             ))}
           </div>
           <p className="mt-3 text-xs text-dim">Your club director can see and manage every drill made at the club.</p>
+          </>)}
         </section>
 
         {error && <p role="alert" className="rounded-xl border border-alert/40 bg-alert/10 p-3 text-sm text-alert">{error}</p>}

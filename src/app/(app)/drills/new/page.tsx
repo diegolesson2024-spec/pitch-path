@@ -9,7 +9,7 @@ export default async function NewDrillPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader eyebrow="Drill builder" title="Design your" accent="drill" />
-      <DrillForm clubName={user.clubName ?? "your club"} />
+      <DrillForm clubName={user.clubName ?? "your club"} library={user.role === "ADMIN" && !user.clubId} />
     </div>
   );
 }

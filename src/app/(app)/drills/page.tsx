@@ -17,6 +17,7 @@ export default async function DrillsPage({ searchParams }: { searchParams: Promi
   const sp = await searchParams;
   const { cat = "", home = "", src = "" } = sp;
   const staff = isStaff(user);
+  const canCreate = staff && (Boolean(user.clubId) || user.role === "ADMIN");
 
   const source: Prisma.DrillWhereInput =
     src === "mine" ? { createdById: user.id } : src === "club" ? { clubId: user.clubId ?? "__none__" } : src === "library" ? { createdById: null, clubId: null } : {};
@@ -38,7 +39,7 @@ export default async function DrillsPage({ searchParams }: { searchParams: Promi
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader eyebrow={`${drills.length} drills`} title="Drill" accent="library">
-        {staff && user.clubId && <Link href="/drills/new" className="btn btn-primary"><Plus size={15} /> Create drill</Link>}
+        {canCreate && <Link href="/drills/new" className="btn btn-primary"><Plus size={15} /> Create drill</Link>}
       </PageHeader>
 
       {staff && (
@@ -55,7 +56,7 @@ export default async function DrillsPage({ searchParams }: { searchParams: Promi
       </div>
 
       {drills.length === 0 ? (
-        <Empty title={src === "mine" ? "You haven't made a drill yet" : "No drills match"} href={staff && user.clubId ? "/drills/new" : undefined} cta="Create a drill">
+        <Empty title={src === "mine" ? "You haven't made a drill yet" : "No drills match"} href={canCreate ? "/drills/new" : undefined} cta="Create a drill">
           {staff ? "Design your own drill, film it on your phone, and add it to any player's plan." : "Try a different filter."}
         </Empty>
       ) : (

@@ -12,7 +12,9 @@ export async function POST(req: Request) {
   if (!isSameOrigin(req)) return Response.json({ error: "Forbidden" }, { status: 403 });
   const user = await getCurrentUser();
   if (!user) return Response.json({ error: "Please sign in again." }, { status: 401 });
-  if (!["ADMIN", "CLUB", "COACH"].includes(user.role) || !user.clubId) {
+  // Platform admins without a club add to the PitchPath library, which every club sees.
+  const toLibrary = user.role === "ADMIN" && !user.clubId;
+  if (!toLibrary && (!["ADMIN", "CLUB", "COACH"].includes(user.role) || !user.clubId)) {
     return Response.json({ error: "Only club staff can create drills." }, { status: 403 });
   }
 
@@ -29,8 +31,8 @@ export async function POST(req: Request) {
       data: {
         ...parsed.data,
         category: categoryFor(parsed.data.skill),
-        createdById: user.id,
-        clubId: user.clubId,
+        createdById: toLibrary ? null : user.id,
+        clubId: toLibrary ? null : user.clubId,
         ...(video ?? {}),
       },
     });
