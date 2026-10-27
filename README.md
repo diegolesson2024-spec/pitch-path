@@ -51,7 +51,7 @@ With `DEMO_MODE="true"` the sign-in page shows one-click demo logins for every r
 - Passwords hashed with bcrypt. Sessions are signed, httpOnly, SameSite cookies (8-hour expiry).
 - Middleware blocks all app routes without a session. Every page, server action and API route re-checks the role and scopes data through `src/lib/access.ts`.
 - Profiles a user isn't allowed to see return **404**, so their existence isn't revealed.
-- Parents and players can only join through one-time invite links (7-day expiry) created by staff. There is no public sign-up.
+- Clubs can self-register at `/signup`: the person signing up becomes the club director of a new, empty club (rate-limited per IP, bot honeypot, guardian-consent confirmation; platform admins are notified). Parents and players can only join through one-time invite links (7-day expiry) created by staff.
 - Guardian consent is recorded per player and required before a player gets their own account.
 - Staff-only notes and unpublished evaluations are hidden from families.
 - An audit log records logins, invites, access changes, evaluations, plans, imports, password changes and report downloads.

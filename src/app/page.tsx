@@ -79,6 +79,10 @@ const SAFE = [
 export const metadata = { alternates: { canonical: "/" } };
 
 export default function LandingPage() {
+  // With demo logins off (production), the main calls to action lead to sign-up instead.
+  const demo = process.env.DEMO_MODE === "true";
+  const cta = demo ? { href: "/login", label: "Try the live demo" } : { href: "/signup", label: "Create your club account" };
+
   return (
     <div className="overflow-x-clip">
       <a href="#main" className="sr-only z-50 rounded-lg bg-volt px-4 py-2 font-semibold text-night focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
@@ -87,15 +91,19 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="sticky top-0 z-30 border-b border-line bg-night/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-8">
-          <Link href="/" aria-label="PitchPath home"><Logo /></Link>
+          {/* Icon-only logo on narrow phones so both header buttons fit. */}
+          <Link href="/" aria-label="PitchPath home">
+            <Logo wordmark={false} className="min-[420px]:hidden" />
+            <Logo className="hidden min-[420px]:inline-flex" />
+          </Link>
           <nav className="hidden items-center gap-7 text-sm font-semibold text-mute md:flex">
             <a href="#how" className="hover:text-ink">How it works</a>
             <a href="#roles" className="hover:text-ink">Who it&apos;s for</a>
             <a href="#safeguarding" className="hover:text-ink">Safeguarding</a>
           </nav>
           <div className="flex items-center gap-2">
-            <Link href="/login" className="btn btn-ghost hidden sm:inline-flex">Sign in</Link>
-            <Link href="/login" className="btn btn-primary">Live demo</Link>
+            <Link href="/login" className="btn btn-ghost !px-3 sm:!px-4">Sign in</Link>
+            <Link href="/signup" className="btn btn-primary !px-3 sm:!px-4">Create account</Link>
           </div>
         </div>
       </header>
@@ -116,7 +124,7 @@ export default function LandingPage() {
               PitchPath turns coach evaluations into clear feedback, measurable goals and home drills. Every young player knows <span className="text-ink">what they&apos;re good at, what to improve, and how to improve it.</span>
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/login" className="btn btn-primary !px-6 !py-3.5 !text-sm">Try the live demo <ArrowRight size={16} /></Link>
+              <Link href={cta.href} className="btn btn-primary !px-6 !py-3.5 !text-sm">{cta.label} <ArrowRight size={16} /></Link>
               <a href="#how" className="btn btn-ghost !px-6 !py-3.5 !text-sm">See how it works</a>
             </div>
             <dl className="mt-10 grid max-w-lg grid-cols-4 gap-4 border-t border-line pt-6">
@@ -227,7 +235,7 @@ export default function LandingPage() {
             <p className="eyebrow mb-3 !text-volt">Safeguarding first</p>
             <h2 className="display text-5xl md:text-6xl">Built for <span className="text-volt">minors&apos;</span> data</h2>
             <p className="mt-5 text-lg text-mute">Youth player data deserves more care than a shared spreadsheet. PitchPath is designed so the right people see the right profile, and nobody else.</p>
-            <Link href="/login" className="btn btn-royal mt-8">Explore the permissions in the demo <ArrowRight size={15} /></Link>
+            <Link href={cta.href} className="btn btn-royal mt-8">{demo ? "Explore the permissions in the demo" : "Set up your club securely"} <ArrowRight size={15} /></Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {SAFE.map((s) => (
@@ -247,9 +255,13 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_80%_100%,rgba(255,106,19,0.55),transparent),radial-gradient(40%_60%_at_10%_0%,rgba(255,255,255,0.18),transparent)]" />
           <div className="relative">
             <h2 className="display text-5xl md:text-7xl">Give every player <br className="hidden sm:block" />a path.</h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-white/80">Explore the full demo as a coach, club director, parent or player. No sign-up needed.</p>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-white/80">
+              {demo
+                ? "Explore the full demo as a coach, club director, parent or player. No sign-up needed."
+                : "Create your club's account in a minute, then add your teams, coaches and players."}
+            </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link href="/login" className="btn !bg-white !px-6 !py-3.5 !text-sm !text-night hover:!bg-ink">Try the live demo <ArrowRight size={16} /></Link>
+              <Link href={cta.href} className="btn !bg-white !px-6 !py-3.5 !text-sm !text-night hover:!bg-ink">{cta.label} <ArrowRight size={16} /></Link>
               <a href="#how" className="btn border border-white/40 !px-6 !py-3.5 !text-sm text-white hover:bg-white/10">How it works</a>
             </div>
           </div>

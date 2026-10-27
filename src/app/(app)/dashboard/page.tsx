@@ -67,6 +67,18 @@ async function StaffDashboard({ user }: { user: CurrentUser }) {
         <Link href="/players" className="btn btn-primary"><ClipboardPen size={15} /> Evaluate</Link>
       </PageHeader>
 
+      {user.role === "CLUB" && teams.length === 0 && (
+        <section className="rounded-xl bg-volt/[0.08] p-5">
+          <h2 className="text-lg font-bold">Welcome to PitchPath{user.clubName ? `, ${user.clubName}` : ""}!</h2>
+          <p className="mt-1 text-sm text-mute">Three steps to get going:</p>
+          <ol className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+            <li><Link href="/teams/new" className="font-semibold text-royal-soft hover:underline">1. Create your first team</Link></li>
+            <li><Link href="/people" className="font-semibold text-royal-soft hover:underline">2. Add your coaches</Link></li>
+            <li><Link href="/players/new" className="font-semibold text-royal-soft hover:underline">3. Add players</Link></li>
+          </ol>
+        </section>
+      )}
+
       {pendingImports.length > 0 && (
         <div className="rounded-lg bg-royal/10 px-4 py-3 text-sm">
           <span className="font-semibold">Imported stats to review:</span>{" "}
@@ -83,7 +95,7 @@ async function StaffDashboard({ user }: { user: CurrentUser }) {
         <Stat label="Players" value={players.length} sub={`${teams.length} teams`} />
         <Stat label="Evaluations due" value={due.length} tone={due.length ? "warn" : undefined} sub="Not evaluated in 60+ days" />
         <Stat label="Active plans" value={`${withPlan}/${players.length}`} sub="Players with a plan" />
-        <Stat label="Attendance" value={`${avgAtt}%`} sub="Season average" />
+        <Stat label="Attendance" value={att.length ? `${avgAtt}%` : "–"} sub="Season average" />
       </div>
 
       <div className="grid gap-6 [&>*]:min-w-0 lg:grid-cols-2">

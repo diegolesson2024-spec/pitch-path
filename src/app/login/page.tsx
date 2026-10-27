@@ -48,6 +48,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <h2 className="display text-3xl">Sign in</h2>
           <p className="mb-6 mt-1 text-sm text-mute">Use the account your club or coach set up for you.</p>
           <LoginForm next={next} />
+          <p className="mt-5 text-center text-sm text-mute">
+            New here?{" "}
+            <Link href="/signup" className="font-semibold text-royal-soft hover:underline">Create an account</Link>
+          </p>
 
           {demo && (
             <div className="mt-8 border-t border-line pt-6">
