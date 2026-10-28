@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     description,
     url: "/",
   },
-  twitter: { card: "summary", title: "PitchPath", description },
+  twitter: { card: "summary_large_image", title: "PitchPath", description },
 };
 
 export const viewport: Viewport = { themeColor: "#040919" };

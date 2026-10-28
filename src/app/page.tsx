@@ -17,6 +17,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { SiteFooter } from "@/components/SiteFooter";
 import { HeroPreview, ProgressPreview, StaticRadar } from "@/components/marketing/Previews";
 
 const STEPS = [
@@ -270,13 +271,7 @@ export default function LandingPage() {
 
       </main>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-mute md:flex-row md:px-8">
-          <Logo size={26} />
-          <p>Demo data only. All players, clubs and people shown are fictional.</p>
-          <p>© {new Date().getFullYear()} PitchPath</p>
-        </div>
-      </footer>
+      <SiteFooter note="The players and clubs shown on this page are examples, not real people." />
     </div>
   );
 }

@@ -56,7 +56,9 @@ export function SignupForm() {
       <label className="flex items-start gap-3 rounded-lg bg-panel-2 p-3 text-sm">
         <input type="checkbox" name="agree" defaultChecked={state.values?.agree} required aria-invalid={invalid("agree")} className="mt-0.5 h-4 w-4 shrink-0 accent-[#ff6a13]" />
         <span>
-          I&apos;m authorised to set up this club, and I&apos;ll get a parent or guardian&apos;s consent before adding any player&apos;s information.
+          I&apos;m authorised to set up this club, I&apos;ll get a parent or guardian&apos;s consent before adding any player&apos;s information, and I agree to the{" "}
+          <a href="/terms" target="_blank" rel="noopener" className="font-semibold text-royal-soft underline">Terms</a> and{" "}
+          <a href="/privacy" target="_blank" rel="noopener" className="font-semibold text-royal-soft underline">Privacy Policy</a>.
         </span>
       </label>
 
